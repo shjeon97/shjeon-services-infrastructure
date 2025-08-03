@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pt-interview-backend
+  namespace: pt-interview
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pt-interview-backend
+  template:
+    metadata:
+      labels:
+        app: pt-interview-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+    spec:
+      containers:
+      - name: backend
+        image: shjeon97/pt-interview-backend:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DB_HOST
+          value: "192.168.35.209"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USERNAME
+          value: "postgres"
+        - name: DB_NAME
+          value: "pt-interview"
+        - name: PORT
+          value: "4000"
+        - name: SERVER_ADDRESS
+          value: "https://pt-interview.back-end.kro.kr"
+        - name: PRIVATE_KEY
+          value: "YOUR_PRIVATE_KEY"
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pt-interview-backend
+  namespace: pt-interview
+spec:
+  selector:
+    app: pt-interview-backend
+  ports:
+  - port: 4000
+    targetPort: 4000
+  type: ClusterIP
