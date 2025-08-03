@@ -1,0 +1,13 @@
+[Unit]
+Description=Hosts File Manager for Internal Access
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/shjeon/shjeon-services-infrastructure/scripts/hosts-manager.sh update
+User=root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

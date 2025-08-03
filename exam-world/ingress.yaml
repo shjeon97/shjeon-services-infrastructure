@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: exam-world-frontend-ingress
+  namespace: exam-world
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-to-https: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: exam-world.prod.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: exam-world-frontend
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - exam-world.prod.kro.kr
+    secretName: exam-world-frontend-letsencrypt
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: exam-world-backend-ingress
+  namespace: exam-world
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-to-https: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: exam-world.back-end.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: exam-world-backend
+            port:
+              number: 4000
+  tls:
+  - hosts:
+    - exam-world.back-end.kro.kr
+    secretName: exam-world-backend-letsencrypt

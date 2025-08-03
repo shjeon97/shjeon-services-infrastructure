@@ -1,0 +1,32 @@
+---
+# Self-signed ClusterIssuer for fallback
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+# Self-signed certificate for work-place-type-test as fallback
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: work-place-type-test-selfsigned
+  namespace: default
+  annotations:
+    cert-manager.io/fallback: "true"
+    cert-manager.io/target-domain: "work-place-type-test.prod.kro.kr"
+    cert-manager.io/retry-after: "2025-08-04T10:31:24Z"
+spec:
+  secretName: work-place-type-test-selfsigned
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - work-place-type-test.prod.kro.kr
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  usages:
+  - digital signature
+  - key encipherment

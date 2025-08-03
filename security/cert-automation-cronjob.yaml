@@ -1,0 +1,175 @@
+---
+# ServiceAccount for certificate automation
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-automation
+  namespace: default
+---
+# ClusterRole for certificate management
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-automation
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates", "certificaterequests"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-automation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-automation
+subjects:
+- kind: ServiceAccount
+  name: cert-automation
+  namespace: default
+---
+# ConfigMap for automation script
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-automation-script
+  namespace: default
+data:
+  check-and-renew.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "$(date): Starting certificate automation check..."
+    
+    # Check if rate limit period has passed (2025-08-04T10:31:24Z)
+    RATE_LIMIT_END="2025-08-04T10:31:24Z"
+    CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    
+    if [[ "$CURRENT_TIME" > "$RATE_LIMIT_END" ]]; then
+        echo "$(date): Rate limit period has passed, attempting Let's Encrypt certificate..."
+        
+        # Check if Let's Encrypt certificate already exists and is valid
+        if kubectl get certificate work-place-type-test-letsencrypt -n default &>/dev/null; then
+            CERT_STATUS=$(kubectl get certificate work-place-type-test-letsencrypt -n default -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+            if [[ "$CERT_STATUS" == "True" ]]; then
+                echo "$(date): Let's Encrypt certificate already exists and is ready"
+                exit 0
+            fi
+        fi
+        
+        # Create Let's Encrypt certificate
+        cat <<EOF | kubectl apply -f -
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: work-place-type-test-letsencrypt
+      namespace: default
+      annotations:
+        cert-manager.io/auto-generated: "true"
+        cert-manager.io/creation-time: "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    spec:
+      secretName: work-place-type-test-letsencrypt
+      issuerRef:
+        name: letsencrypt-prod
+        kind: ClusterIssuer
+      dnsNames:
+      - work-place-type-test.prod.kro.kr
+      privateKey:
+        algorithm: RSA
+        size: 2048
+      usages:
+      - digital signature
+      - key encipherment
+    EOF
+        
+        echo "$(date): Let's Encrypt certificate creation initiated"
+        
+        # Wait and check if certificate is ready
+        sleep 60
+        CERT_STATUS=$(kubectl get certificate work-place-type-test-letsencrypt -n default -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "False")
+        
+        if [[ "$CERT_STATUS" == "True" ]]; then
+            echo "$(date): Let's Encrypt certificate successfully issued!"
+            
+            # Update ingress to use Let's Encrypt certificate
+            kubectl patch ingress work-place-type-test-ingress -n default --type=json -p='[
+                {
+                    "op": "replace",
+                    "path": "/spec/tls/0/secretName",
+                    "value": "work-place-type-test-letsencrypt"
+                },
+                {
+                    "op": "add",
+                    "path": "/metadata/annotations/cert-manager.io~1cluster-issuer",
+                    "value": "letsencrypt-prod"
+                }
+            ]'
+            
+            echo "$(date): Ingress updated to use Let's Encrypt certificate"
+            
+            # Clean up self-signed certificate
+            kubectl delete certificate work-place-type-test-selfsigned -n default --ignore-not-found=true
+            kubectl delete secret work-place-type-test-selfsigned -n default --ignore-not-found=true
+            
+            echo "$(date): Self-signed certificate cleaned up"
+        else
+            echo "$(date): Let's Encrypt certificate failed, keeping self-signed fallback"
+        fi
+    else
+        echo "$(date): Rate limit still active until $RATE_LIMIT_END"
+        
+        # Ensure self-signed certificate is being used
+        CURRENT_SECRET=$(kubectl get ingress work-place-type-test-ingress -n default -o jsonpath='{.spec.tls[0].secretName}')
+        if [[ "$CURRENT_SECRET" != "work-place-type-test-selfsigned" ]]; then
+            echo "$(date): Switching to self-signed certificate"
+            kubectl patch ingress work-place-type-test-ingress -n default --type=json -p='[
+                {
+                    "op": "replace",
+                    "path": "/spec/tls/0/secretName",
+                    "value": "work-place-type-test-selfsigned"
+                }
+            ]'
+        fi
+    fi
+    
+    echo "$(date): Certificate automation check completed"
+---
+# CronJob for automatic certificate management
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cert-automation
+  namespace: default
+spec:
+  schedule: "0 */2 * * *"  # Run every 2 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: cert-automation
+          containers:
+          - name: cert-checker
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/bash
+            - /scripts/check-and-renew.sh
+            volumeMounts:
+            - name: script
+              mountPath: /scripts
+            env:
+            - name: TZ
+              value: "UTC"
+          volumes:
+          - name: script
+            configMap:
+              name: cert-automation-script
+              defaultMode: 0755
+          restartPolicy: OnFailure

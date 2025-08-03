@@ -1,0 +1,29 @@
+---
+# HTTP to HTTPS redirect middleware
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: default
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# Global HTTP to HTTPS redirect IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: http-redirect
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`workplace-type-test.prod.kro.kr`) || Host(`work-place-type-test.prod.kro.kr`) || Host(`argocd.shjeon.kro.kr`) || Host(`date-calendar.prod.kro.kr`) || Host(`exam-world.prod.kro.kr`) || Host(`exam-world.back-end.kro.kr`) || Host(`intranet.prod.kro.kr`) || Host(`live-connect.prod.kro.kr`) || Host(`pt-interview.prod.kro.kr`) || Host(`code-server.shjeon.kro.kr`) || Host(`n8n.shjeon.kro.kr`) || Host(`ai-server.shjeon.kro.kr`) || Host(`syncthing.shjeon.kro.kr`)
+      kind: Rule
+      middlewares:
+        - name: https-redirect
+      services:
+        - name: workplace-type-test
+          port: 80
