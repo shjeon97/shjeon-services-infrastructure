@@ -23,7 +23,7 @@ spec:
   tls:
   - hosts:
     - pt-interview.prod.kro.kr
-    secretName: pt-interview-frontend-letsencrypt
+    secretName: pt-interview-frontend-tls
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -50,4 +50,4 @@ spec:
   tls:
   - hosts:
     - pt-interview.back-end.kro.kr
-    secretName: pt-interview-backend-letsencrypt
+    secretName: pt-interview-backend-tls
