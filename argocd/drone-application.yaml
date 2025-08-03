@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: drone
+  namespace: argocd
+spec:
+  destination:
+    namespace: drone
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: drone
+    repoURL: https://github.com/shjeon97/shjeon-services-infrastructure.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

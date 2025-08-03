@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: drone
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drone-server
+  namespace: drone
+  labels:
+    app: drone-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drone-server
+  template:
+    metadata:
+      labels:
+        app: drone-server
+    spec:
+      containers:
+      - name: drone-server
+        image: drone/drone:latest
+        ports:
+        - name: http
+          containerPort: 80
+        env:
+        - name: DRONE_GITEA_SERVER
+          value: "https://gitea.shjeon.kro.kr"
+        - name: DRONE_GITEA_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: gitea-client-id
+        - name: DRONE_RPC_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: drone-secrets
+              key: rpc-secret
+        - name: DRONE_SERVER_HOST
+          value: "drone.shjeon.kro.kr"
+        - name: DRONE_SERVER_PROTO
+          value: "https"
+        volumeMounts:
+        - name: drone-data
+          mountPath: /data
+      volumes:
+      - name: drone-data
+        persistentVolumeClaim:
+          claimName: drone-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drone-pvc
+  namespace: drone
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: longhorn
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drone-server-service
+  namespace: drone
+spec:
+  selector:
+    app: drone-server
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+--- 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: drone-server-ingress
+  namespace: drone
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: drone.shjeon.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: drone-server-service
+            port:
+              name: http
+  tls:
+  - hosts:
+    - drone.shjeon.kro.kr
+    secretName: drone-tls-secret # Traefik이 Let's Encrypt를 통해 생성할 시크릿 이름
