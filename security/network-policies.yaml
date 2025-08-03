@@ -22,6 +22,13 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
+          name: ingress-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 3000
+  - from:
+    - namespaceSelector:
+        matchLabels:
           name: drone  # Allow Drone CI access
     ports:
     - protocol: TCP
@@ -44,6 +51,10 @@ spec:
         matchLabels:
           name: kube-system  # Traefik ingress controller
   - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-system  # Traefik ingress controller
+  - from:
     - podSelector: {}  # Allow internal harbor communication
 ---
 apiVersion: networking.k8s.io/v1
@@ -63,6 +74,13 @@ spec:
     - namespaceSelector:
         matchLabels:
           name: kube-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 8200
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-system  # Traefik ingress controller
     ports:
     - protocol: TCP
       port: 8200
@@ -98,6 +116,13 @@ spec:
     - namespaceSelector:
         matchLabels:
           name: kube-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 80
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-system  # Traefik ingress controller
     ports:
     - protocol: TCP
       port: 80
