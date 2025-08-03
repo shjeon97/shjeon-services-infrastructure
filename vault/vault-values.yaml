@@ -1,0 +1,12 @@
+server:
+  dataStorage:
+    enabled: true
+    storageClass: longhorn
+  standalone:
+    enabled: true
+  ingress:
+    enabled: true
+    hosts:
+    - host: vault.shjeon.kro.kr
+ui:
+  enabled: true
