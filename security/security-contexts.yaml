@@ -1,0 +1,52 @@
+# Security Context Templates and Policies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-context-template
+  namespace: default
+data:
+  recommended-security-context.yaml: |
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      capabilities:
+        drop:
+        - ALL
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+# Secret scanning configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secret-scanning-config
+  namespace: default
+data:
+  patterns.txt: |
+    # Common secret patterns to monitor
+    (?i)(password|passwd|pwd)\s*[:=]\s*["']?([^"'\s]+)
+    (?i)(secret|token|key)\s*[:=]\s*["']?([^"'\s]+)
+    (?i)(api[_-]?key)\s*[:=]\s*["']?([^"'\s]+)
+    (?i)(access[_-]?token)\s*[:=]\s*["']?([^"'\s]+)
+---
+# Certificate management configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-management-config
+  namespace: default
+data:
+  renewal-schedule.yaml: |
+    certificates:
+      - name: "*.shjeon.kro.kr"
+        issuer: "letsencrypt"
+        renewal_threshold_days: 30
+        auto_renewal: true
+      - name: "vault.shjeon.kro.kr"
+        issuer: "letsencrypt"
+        renewal_threshold_days: 30
+        auto_renewal: true
