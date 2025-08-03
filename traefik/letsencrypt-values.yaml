@@ -1,0 +1,70 @@
+# Traefik Let's Encrypt 설정
+deployment:
+  enabled: true
+  replicas: 1
+
+# 포트 설정
+ports:
+  web:
+    port: 80
+    exposedPort: 80
+    redirectTo: websecure
+  websecure:
+    port: 443
+    exposedPort: 443
+    tls:
+      enabled: true
+
+# Let's Encrypt 설정
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@shjeon.kro.kr
+      storage: /data/acme.json
+      keyType: EC256
+      httpChallenge:
+        entryPoint: web
+
+# 영구 저장소 설정
+persistence:
+  enabled: true
+  name: data
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  storageClass: longhorn
+  path: /data
+
+# 서비스 설정
+service:
+  enabled: true
+  type: LoadBalancer
+
+# Ingress 설정
+ingressRoute:
+  dashboard:
+    enabled: true
+    annotations: {}
+    labels: {}
+
+# 로그 설정
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
+
+# 메트릭 설정
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+
+# API 설정
+api:
+  dashboard: true
+  insecure: false
+
+# 추가 인수
+additionalArguments:
+  - "--providers.kubernetesingress.allowexternalnameservices=true"
+  - "--providers.kubernetescrd.allowexternalnameservices=true"

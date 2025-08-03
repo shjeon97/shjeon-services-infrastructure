@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-config
+  namespace: ingress-system
+data:
+  traefik.yaml: |
+    # Let's Encrypt 설정
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          email: admin@shjeon.kro.kr
+          storage: /data/acme.json
+          keyType: EC256
+          httpChallenge:
+            entryPoint: web
+          # DNS Challenge 설정 (선택사항)
+          # dnsChallenge:
+          #   provider: cloudflare
+          #   resolvers:
+          #     - "1.1.1.1:53"
+          #     - "8.8.8.8:53"
+    
+    # Entry Points
+    entryPoints:
+      web:
+        address: ":80"
+        http:
+          redirections:
+            entrypoint:
+              to: websecure
+              scheme: https
+              permanent: true
+      websecure:
+        address: ":443"
+    
+    # API 설정
+    api:
+      dashboard: true
+      insecure: false
+    
+    # 프로바이더 설정
+    providers:
+      kubernetescrd: {}
+      kubernetesingress: {}
+    
+    # 로그 설정
+    log:
+      level: INFO
+    
+    # 메트릭 설정
+    metrics:
+      prometheus:
+        addEntryPointsLabels: true
+        addServicesLabels: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-acme-pvc
+  namespace: ingress-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn
