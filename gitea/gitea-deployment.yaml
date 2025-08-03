@@ -88,9 +88,6 @@ metadata:
   name: gitea-ingress
   namespace: gitea
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
@@ -103,8 +100,4 @@ spec:
           service:
             name: gitea-service
             port:
-              name: http
-  tls:
-  - hosts:
-    - gitea.shjeon.kro.kr
-    secretName: gitea-tls-secret # Traefik이 Let's Encrypt를 통해 생성할 시크릿 이름
+              number: 80
