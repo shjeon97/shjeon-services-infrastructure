@@ -28,7 +28,7 @@ spec:
           containerPort: 80
         env:
         - name: DRONE_GITEA_SERVER
-          value: "https://gitea.shjeon.kro.kr"
+          value: "http://gitea.shjeon.kro.kr"
         - name: DRONE_GITEA_CLIENT_ID
           valueFrom:
             secretKeyRef:
