@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exam-world-backend
+  namespace: exam-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exam-world-backend
+  template:
+    metadata:
+      labels:
+        app: exam-world-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+    spec:
+      containers:
+      - name: backend
+        image: shjeon97/exam-world-backend:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DB_HOST
+          value: "192.168.35.209"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USERNAME
+          value: "postgres"
+        - name: DB_NAME
+          value: "exam-world"
+        - name: PORT
+          value: "4000"
+        - name: SERVER_ADDRESS
+          value: "https://exam-world.back-end.kro.kr"
+        - name: PRIVATE_KEY
+          value: "9C8EB6D44D9EC3655947418A8B2B9"
+        - name: NODE_VERSION
+          value: "20.19.4"
+        - name: YARN_VERSION
+          value: "1.22.22"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: exam-world-secrets
+              key: db_password
+        - name: GMAIL_SMTP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: exam-world-secrets
+              key: gmail_smtp_key
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: upload-volume
+          mountPath: /public/upload
+      volumes:
+      - name: upload-volume
+        hostPath:
+          path: /main/public/exam-world/upload
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exam-world-backend
+  namespace: exam-world
+spec:
+  selector:
+    app: exam-world-backend
+  ports:
+  - port: 4000
+    targetPort: 4000
+  type: ClusterIP

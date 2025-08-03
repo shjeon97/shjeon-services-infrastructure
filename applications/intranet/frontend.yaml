@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intranet-frontend
+  namespace: intranet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intranet-frontend
+  template:
+    metadata:
+      labels:
+        app: intranet-frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: intranet-frontend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: intranet-frontend
+  namespace: intranet
+spec:
+  selector:
+    app: intranet-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intranet-frontend-html
+  namespace: intranet
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Company Intranet - Internal Portal</title>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .header { background: #2c3e50; color: white; padding: 20px; border-radius: 5px; }
+            .content { margin: 20px 0; background: white; padding: 20px; border-radius: 5px; }
+            .status { background: #27ae60; color: white; padding: 10px; border-radius: 3px; }
+            .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+            .feature-card { background: #ecf0f1; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; }
+            .nav-links { background: #34495e; color: white; padding: 15px; margin: 20px 0; border-radius: 5px; }
+            .nav-links a { color: #3498db; text-decoration: none; margin-right: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🏢 Company Intranet Portal</h1>
+            <p>내부 직원 전용 포털 시스템</p>
+        </div>
+        <div class="content">
+            <div class="status">✅ 인트라넷 프론트엔드 서비스가 정상적으로 작동 중입니다</div>
+            
+            <div class="nav-links">
+                <strong>Quick Links:</strong>
+                <a href="#hr">HR Portal</a>
+                <a href="#docs">Document Center</a>
+                <a href="#directory">Employee Directory</a>
+                <a href="#announcements">Announcements</a>
+                <a href="#resources">Resources</a>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h4>👥 Human Resources</h4>
+                    <p>직원 정보, 휴가 신청, 급여 조회</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📋 Document Management</h4>
+                    <p>내부 문서, 정책, 양식 관리</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📞 Employee Directory</h4>
+                    <p>직원 연락처 및 조직도</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📢 Internal Communications</h4>
+                    <p>공지사항, 뉴스, 이벤트</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💻 IT Support</h4>
+                    <p>기술 지원, 소프트웨어 요청</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Company Resources</h4>
+                    <p>회의실 예약, 장비 관리</p>
+                </div>
+            </div>
+
+            <h3>서비스 정보:</h3>
+            <ul>
+                <li>서비스: intranet-frontend</li>
+                <li>포트: 80</li>
+                <li>네임스페이스: intranet</li>
+                <li>도메인: <a href="https://intranet.prod.kro.kr">intranet.prod.kro.kr</a></li>
+                <li>백엔드 API: <a href="https://intranet.back-end.kro.kr">intranet.back-end.kro.kr</a></li>
+            </ul>
+        </div>
+    </body>
+    </html>

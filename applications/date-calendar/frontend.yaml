@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: date-calendar-frontend
+  namespace: date-calendar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: date-calendar-frontend
+  template:
+    metadata:
+      labels:
+        app: date-calendar-frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: date-calendar-frontend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: date-calendar-frontend
+  namespace: date-calendar
+spec:
+  selector:
+    app: date-calendar-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: date-calendar-frontend-html
+  namespace: date-calendar
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Date Calendar - Frontend</title>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .header { background: #17a2b8; color: white; padding: 20px; border-radius: 5px; }
+            .content { margin: 20px 0; }
+            .status { background: #28a745; color: white; padding: 10px; border-radius: 3px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📅 Date Calendar - Frontend</h1>
+            <p>날짜 및 캘린더 관리 시스템</p>
+        </div>
+        <div class="content">
+            <div class="status">✅ 프론트엔드 서비스가 정상적으로 작동 중입니다</div>
+            <h3>서비스 정보:</h3>
+            <ul>
+                <li>서비스: date-calendar-frontend</li>
+                <li>포트: 80</li>
+                <li>네임스페이스: date-calendar</li>
+                <li>도메인: <a href="https://date-calendar.prod.kro.kr">date-calendar.prod.kro.kr</a></li>
+                <li>백엔드: <a href="https://date-calendar.back-end.kro.kr">date-calendar.back-end.kro.kr</a></li>
+            </ul>
+        </div>
+    </body>
+    </html>

@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: date-calendar-frontend-ingress
+  namespace: date-calendar
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-to-https: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: date-calendar.prod.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: date-calendar-frontend
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - date-calendar.prod.kro.kr
+    secretName: date-calendar-prod-kro-kr-letsencrypt
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: date-calendar-backend-ingress
+  namespace: date-calendar
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-to-https: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: date-calendar.back-end.kro.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: date-calendar-backend
+            port:
+              number: 4000
+  tls:
+  - hosts:
+    - date-calendar.back-end.kro.kr
+    secretName: date-calendar-back-end-kro-kr-letsencrypt

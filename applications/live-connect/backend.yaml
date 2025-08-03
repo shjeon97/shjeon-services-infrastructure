@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: live-connect-backend
+  namespace: live-connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: live-connect-backend
+  template:
+    metadata:
+      labels:
+        app: live-connect-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+    spec:
+      containers:
+      - name: backend
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: live-connect-backend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: live-connect-backend
+  namespace: live-connect
+spec:
+  selector:
+    app: live-connect-backend
+  ports:
+  - port: 4000
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: live-connect-backend-html
+  namespace: live-connect
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Live Connect Backend API - Communication Services</title>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; }
+            .header { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+            .content { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px; }
+            .status { background: #10b981; color: white; padding: 10px; border-radius: 5px; }
+            .api-section { background: rgba(255,255,255,0.1); padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #3b82f6; }
+            .endpoint { background: rgba(0,0,0,0.3); color: white; padding: 8px 12px; border-radius: 3px; font-family: monospace; margin: 5px 0; }
+            .method { padding: 2px 6px; border-radius: 2px; font-size: 12px; font-weight: bold; margin-right: 8px; }
+            .get { background: #10b981; }
+            .post { background: #3b82f6; }
+            .put { background: #f59e0b; }
+            .delete { background: #ef4444; }
+            .websocket { background: #8b5cf6; }
+            .real-time { background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🔧 Live Connect Backend API</h1>
+            <p>실시간 커뮤니케이션 시스템 백엔드 API 서비스</p>
+        </div>
+        <div class="content">
+            <div class="status">✅ Live Connect 백엔드 API 서비스가 정상적으로 작동 중입니다</div>
+            
+            <div class="real-time">
+                <h4>🔗 Real-time Connections Active</h4>
+                <p>WebSocket 연결: wss://live-connect.back-end.kro.kr/ws</p>
+                <p>TURN/STUN 서버: turn://live-connect.back-end.kro.kr:3478</p>
+            </div>
+
+            <h3>Available API Endpoints:</h3>
+            
+            <div class="api-section">
+                <h4>💬 Messaging API</h4>
+                <div class="endpoint"><span class="method get">GET</span> /api/messages/{roomId} - 채팅 메시지 조회</div>
+                <div class="endpoint"><span class="method post">POST</span> /api/messages - 메시지 전송</div>
+                <div class="endpoint"><span class="method websocket">WS</span> /ws/chat/{roomId} - 실시간 채팅 연결</div>
+            </div>
+
+            <div class="api-section">
+                <h4>📹 Video/Audio API</h4>
+                <div class="endpoint"><span class="method post">POST</span> /api/calls/initiate - 통화 시작</div>
+                <div class="endpoint"><span class="method post">POST</span> /api/calls/answer - 통화 응답</div>
+                <div class="endpoint"><span class="method delete">DELETE</span> /api/calls/{callId} - 통화 종료</div>
+                <div class="endpoint"><span class="method websocket">WS</span> /ws/webrtc/{callId} - WebRTC 시그널링</div>
+            </div>
+
+            <div class="api-section">
+                <h4>🏠 Room Management</h4>
+                <div class="endpoint"><span class="method get">GET</span> /api/rooms - 활성 룸 목록</div>
+                <div class="endpoint"><span class="method post">POST</span> /api/rooms - 새 룸 생성</div>
+                <div class="endpoint"><span class="method post">POST</span> /api/rooms/{roomId}/join - 룸 참가</div>
+                <div class="endpoint"><span class="method delete">DELETE</span> /api/rooms/{roomId}/leave - 룸 떠나기</div>
+            </div>
+
+            <div class="api-section">
+                <h4>👥 User Management</h4>
+                <div class="endpoint"><span class="method get">GET</span> /api/users/online - 온라인 사용자</div>
+                <div class="endpoint"><span class="method put">PUT</span> /api/users/status - 상태 업데이트</div>
+                <div class="endpoint"><span class="method get">GET</span> /api/users/{userId}/presence - 사용자 접속 상태</div>
+            </div>
+
+            <div class="api-section">
+                <h4>🔔 Notification Services</h4>
+                <div class="endpoint"><span class="method post">POST</span> /api/notifications/send - 알림 전송</div>
+                <div class="endpoint"><span class="method get">GET</span> /api/notifications/subscribe - 푸시 구독</div>
+                <div class="endpoint"><span class="method websocket">WS</span> /ws/notifications - 실시간 알림</div>
+            </div>
+
+            <div class="api-section">
+                <h4>📊 Analytics & Monitoring</h4>
+                <div class="endpoint"><span class="method get">GET</span> /api/stats/connections - 연결 통계</div>
+                <div class="endpoint"><span class="method get">GET</span> /api/health - 서비스 상태</div>
+                <div class="endpoint"><span class="method get">GET</span> /api/metrics - 성능 메트릭</div>
+            </div>
+
+            <h3>서비스 정보:</h3>
+            <ul>
+                <li>서비스: live-connect-backend</li>
+                <li>포트: 4000</li>
+                <li>네임스페이스: live-connect</li>
+                <li>API 엔드포인트: <a href="https://live-connect.back-end.kro.kr" style="color: #fbbf24;">live-connect.back-end.kro.kr</a></li>
+                <li>프론트엔드: <a href="https://live-connect.prod.kro.kr" style="color: #fbbf24;">live-connect.prod.kro.kr</a></li>
+                <li>WebSocket 지원: 실시간 양방향 통신</li>
+                <li>WebRTC 지원: P2P 미디어 스트리밍</li>
+            </ul>
+        </div>
+    </body>
+    </html>

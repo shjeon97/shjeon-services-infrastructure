@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pt-interview-frontend
+  namespace: pt-interview
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pt-interview-frontend
+  template:
+    metadata:
+      labels:
+        app: pt-interview-frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+    spec:
+      containers:
+      - name: frontend
+        image: shjeon97/pt-interview-frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pt-interview-frontend
+  namespace: pt-interview
+spec:
+  selector:
+    app: pt-interview-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

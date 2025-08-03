@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intranet-backend
+  namespace: intranet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intranet-backend
+  template:
+    metadata:
+      labels:
+        app: intranet-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+    spec:
+      containers:
+      - name: backend
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: intranet-backend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: intranet-backend
+  namespace: intranet
+spec:
+  selector:
+    app: intranet-backend
+  ports:
+  - port: 4000
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intranet-backend-html
+  namespace: intranet
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Intranet Backend API - Internal Services</title>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+            .header { background: #495057; color: white; padding: 20px; border-radius: 5px; }
+            .content { margin: 20px 0; background: white; padding: 20px; border-radius: 5px; }
+            .status { background: #28a745; color: white; padding: 10px; border-radius: 3px; }
+            .api-section { background: #e9ecef; padding: 15px; margin: 15px 0; border-radius: 5px; }
+            .endpoint { background: #6c757d; color: white; padding: 8px 12px; border-radius: 3px; font-family: monospace; margin: 5px 0; }
+            .method { background: #007bff; color: white; padding: 2px 6px; border-radius: 2px; font-size: 12px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🔧 Intranet Backend API</h1>
+            <p>회사 인트라넷 시스템 백엔드 API 서비스</p>
+        </div>
+        <div class="content">
+            <div class="status">✅ 인트라넷 백엔드 API 서비스가 정상적으로 작동 중입니다</div>
+            
+            <h3>Available API Endpoints:</h3>
+            
+            <div class="api-section">
+                <h4>👤 Employee Management</h4>
+                <div class="endpoint"><span class="method">GET</span> /api/employees - 직원 목록 조회</div>
+                <div class="endpoint"><span class="method">GET</span> /api/employees/{id} - 특정 직원 정보</div>
+                <div class="endpoint"><span class="method">PUT</span> /api/employees/{id} - 직원 정보 수정</div>
+            </div>
+
+            <div class="api-section">
+                <h4>📋 Document Management</h4>
+                <div class="endpoint"><span class="method">GET</span> /api/documents - 문서 목록</div>
+                <div class="endpoint"><span class="method">POST</span> /api/documents - 문서 업로드</div>
+                <div class="endpoint"><span class="method">GET</span> /api/documents/{id} - 문서 다운로드</div>
+            </div>
+
+            <div class="api-section">
+                <h4>🏢 HR Services</h4>
+                <div class="endpoint"><span class="method">GET</span> /api/leave-requests - 휴가 신청 내역</div>
+                <div class="endpoint"><span class="method">POST</span> /api/leave-requests - 휴가 신청</div>
+                <div class="endpoint"><span class="method">GET</span> /api/payroll/{id} - 급여 정보</div>
+            </div>
+
+            <div class="api-section">
+                <h4>📢 Communications</h4>
+                <div class="endpoint"><span class="method">GET</span> /api/announcements - 공지사항</div>
+                <div class="endpoint"><span class="method">POST</span> /api/announcements - 공지사항 작성</div>
+                <div class="endpoint"><span class="method">GET</span> /api/directory - 조직도/연락처</div>
+            </div>
+
+            <div class="api-section">
+                <h4>🛠️ System Resources</h4>
+                <div class="endpoint"><span class="method">GET</span> /api/meeting-rooms - 회의실 현황</div>
+                <div class="endpoint"><span class="method">POST</span> /api/meeting-rooms/book - 회의실 예약</div>
+                <div class="endpoint"><span class="method">GET</span> /api/it-support - IT 지원 요청</div>
+            </div>
+
+            <h3>서비스 정보:</h3>
+            <ul>
+                <li>서비스: intranet-backend</li>
+                <li>포트: 4000</li>
+                <li>네임스페이스: intranet</li>
+                <li>API 엔드포인트: <a href="https://intranet.back-end.kro.kr">intranet.back-end.kro.kr</a></li>
+                <li>프론트엔드: <a href="https://intranet.prod.kro.kr">intranet.prod.kro.kr</a></li>
+            </ul>
+        </div>
+    </body>
+    </html>

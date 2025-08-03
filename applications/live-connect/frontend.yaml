@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: live-connect-frontend
+  namespace: live-connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: live-connect-frontend
+  template:
+    metadata:
+      labels:
+        app: live-connect-frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: live-connect-frontend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: live-connect-frontend
+  namespace: live-connect
+spec:
+  selector:
+    app: live-connect-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: live-connect-frontend-html
+  namespace: live-connect
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Live Connect - Real-time Communication Platform</title>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+            .header { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+            .content { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px; }
+            .status { background: #10b981; color: white; padding: 10px; border-radius: 5px; }
+            .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+            .feature-card { background: rgba(255,255,255,0.15); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
+            .feature-card h4 { color: #fbbf24; margin-top: 0; }
+            .connection-status { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+            .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+            @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+            .quick-actions { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .action-btn { background: #3b82f6; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; margin: 5px; display: inline-block; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🔗 Live Connect</h1>
+            <p>실시간 커뮤니케이션 플랫폼</p>
+            <div class="connection-status">
+                <div class="status-dot"></div>
+                <span>실시간 연결 활성화</span>
+            </div>
+        </div>
+        <div class="content">
+            <div class="status">✅ Live Connect 프론트엔드 서비스가 정상적으로 작동 중입니다</div>
+            
+            <div class="quick-actions">
+                <strong>Quick Actions:</strong>
+                <a href="#chat" class="action-btn">💬 Start Chat</a>
+                <a href="#video" class="action-btn">📹 Video Call</a>
+                <a href="#screen" class="action-btn">🖥️ Screen Share</a>
+                <a href="#rooms" class="action-btn">🏠 Join Room</a>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <h4>💬 Instant Messaging</h4>
+                    <p>실시간 텍스트 채팅, 그룹 대화, 파일 공유</p>
+                    <small>WebSocket 기반 실시간 메시징</small>
+                </div>
+                <div class="feature-card">
+                    <h4>📹 Video Conferencing</h4>
+                    <p>HD 화상 통화, 화면 공유, 녹화 기능</p>
+                    <small>WebRTC P2P 연결</small>
+                </div>
+                <div class="feature-card">
+                    <h4>🎤 Voice Calls</h4>
+                    <p>고품질 음성 통화, 다자간 음성 회의</p>
+                    <small>낮은 지연시간 오디오 스트림</small>
+                </div>
+                <div class="feature-card">
+                    <h4>🏠 Virtual Rooms</h4>
+                    <p>주제별 채팅방, 영구 채널, 임시 룸</p>
+                    <small>동적 룸 생성 및 관리</small>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Mobile Support</h4>
+                    <p>모바일 최적화 인터페이스, PWA 지원</p>
+                    <small>크로스 플랫폼 호환성</small>
+                </div>
+                <div class="feature-card">
+                    <h4>🔔 Real-time Notifications</h4>
+                    <p>즉시 알림, 맞춤 알림 설정</p>
+                    <small>푸시 알림 및 브라우저 알림</small>
+                </div>
+            </div>
+
+            <h3>Connection Information:</h3>
+            <ul>
+                <li>서비스: live-connect-frontend</li>
+                <li>포트: 80</li>
+                <li>네임스페이스: live-connect</li>
+                <li>도메인: <a href="https://live-connect.prod.kro.kr" style="color: #fbbf24;">live-connect.prod.kro.kr</a></li>
+                <li>백엔드 API: <a href="https://live-connect.back-end.kro.kr" style="color: #fbbf24;">live-connect.back-end.kro.kr</a></li>
+                <li>WebSocket 연결: wss://live-connect.back-end.kro.kr/ws</li>
+            </ul>
+        </div>
+    </body>
+    </html>
