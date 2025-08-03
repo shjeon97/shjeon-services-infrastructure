@@ -41,6 +41,8 @@ spec:
           value: "gitea.shjeon.kro.kr"
         - name: GITEA__SERVER__SSH_PORT
           value: "22"
+        - name: GITEA__DATABASE__TYPE
+          value: "sqlite3"
         volumeMounts:
         - name: gitea-data
           mountPath: /data
