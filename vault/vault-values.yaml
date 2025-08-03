@@ -6,7 +6,16 @@ server:
     enabled: true
   ingress:
     enabled: true
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+      kubernetes.io/ingress.class: traefik
     hosts:
     - host: vault.shjeon.kro.kr
+    tls:
+    - hosts:
+      - vault.shjeon.kro.kr
+      secretName: vault-tls-secret
 ui:
   enabled: true
