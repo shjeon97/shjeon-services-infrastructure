@@ -23,7 +23,7 @@ spec:
         - containerPort: 4000
         env:
         - name: DB_HOST
-          value: "192.168.35.209"
+          value: "shjeon.duckdns.org"
         - name: DB_PORT
           value: "5432"
         - name: DB_USERNAME
@@ -34,8 +34,23 @@ spec:
           value: "4000"
         - name: SERVER_ADDRESS
           value: "https://pt-interview.back-end.kro.kr"
+        - name: GMAIL_SMTP_NAME
+          value: "shjeon.dev@gmail.com"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pt-interview-secrets
+              key: db_password
         - name: PRIVATE_KEY
-          value: "YOUR_PRIVATE_KEY"
+          valueFrom:
+            secretKeyRef:
+              name: pt-interview-secrets
+              key: private_key
+        - name: GMAIL_SMTP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: pt-interview-secrets
+              key: gmail_smtp_key
         resources:
           limits:
             memory: "512Mi"
