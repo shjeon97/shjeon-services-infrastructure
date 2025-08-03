@@ -1,0 +1,21 @@
+expose:
+  type: ingress
+  ingress:
+    hosts:
+      core: harbor.shjeon.kro.kr
+externalURL: https://harbor.shjeon.kro.kr
+persistence:
+  persistentVolumeClaim:
+    registry:
+      storageClass: longhorn
+    chartmuseum:
+      storageClass: longhorn
+    jobservice:
+      jobLog:
+        storageClass: longhorn
+    database:
+      storageClass: longhorn
+    redis:
+      storageClass: longhorn
+    trivy:
+      storageClass: longhorn
