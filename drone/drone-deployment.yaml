@@ -84,7 +84,7 @@ metadata:
   name: drone-server-ingress
   namespace: drone
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
     kubernetes.io/ingress.class: traefik
