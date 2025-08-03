@@ -10,7 +10,7 @@ stringData:
   type: git
   url: https://github.com/shjeon97/shjeon-services-infrastructure
   username: shjeon97
-  password: # TODO: Add GitHub Personal Access Token
+  password: # REPLACE_WITH_GITHUB_TOKEN
 ---
 apiVersion: v1
 kind: ConfigMap

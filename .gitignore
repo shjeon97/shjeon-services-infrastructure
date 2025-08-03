@@ -1,0 +1,13 @@
+# Sensitive configuration files
+**/secrets/
+**/*secret*.yaml
+**/*token*.yaml
+
+# Environment specific configs
+.env
+.env.local
+.env.production
+
+# Temporary files
+*.tmp
+*.log
