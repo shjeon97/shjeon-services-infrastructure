@@ -1,0 +1,119 @@
+# Network Policies for Infrastructure Components
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gitea-network-policy
+  namespace: gitea
+spec:
+  podSelector:
+    matchLabels:
+      app: gitea
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 3000
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: drone  # Allow Drone CI access
+    ports:
+    - protocol: TCP
+      port: 3000
+  egress:
+  - {}  # Allow all outbound traffic for Git operations
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: harbor-network-policy
+  namespace: harbor
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system  # Traefik ingress controller
+  - from:
+    - podSelector: {}  # Allow internal harbor communication
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vault-network-policy
+  namespace: vault
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 8200
+  - from:
+    - podSelector: {}  # Allow internal vault communication
+    ports:
+    - protocol: TCP
+      port: 8200
+    - protocol: TCP
+      port: 8201
+  egress:
+  - to: []  # Restrict outbound traffic
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: drone-network-policy
+  namespace: drone
+spec:
+  podSelector:
+    matchLabels:
+      app: drone-server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system  # Traefik ingress controller
+    ports:
+    - protocol: TCP
+      port: 80
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: gitea  # Allow access to Gitea
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  - to: []  # Allow DNS resolution
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
