@@ -36,7 +36,7 @@ spec:
         - name: GITEA__SERVER__DOMAIN
           value: "gitea.shjeon.kro.kr"
         - name: GITEA__SERVER__ROOT_URL
-          value: "https://gitea.shjeon.kro.kr/"
+          value: "http://gitea.shjeon.kro.kr/"
         - name: GITEA__SERVER__SSH_DOMAIN
           value: "gitea.shjeon.kro.kr"
         - name: GITEA__SERVER__SSH_PORT
