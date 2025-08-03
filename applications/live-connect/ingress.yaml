@@ -23,7 +23,7 @@ spec:
   tls:
   - hosts:
     - live-connect.prod.kro.kr
-    secretName: live-connect-prod-kro-kr-letsencrypt
+    secretName: live-connect-frontend-tls
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -50,4 +50,4 @@ spec:
   tls:
   - hosts:
     - live-connect.back-end.kro.kr
-    secretName: live-connect-back-end-kro-kr-letsencrypt
+    secretName: live-connect-backend-tls

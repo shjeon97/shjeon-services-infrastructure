@@ -23,7 +23,7 @@ spec:
   tls:
   - hosts:
     - date-calendar.prod.kro.kr
-    secretName: date-calendar-prod-kro-kr-letsencrypt
+    secretName: date-calendar-frontend-tls
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -50,4 +50,4 @@ spec:
   tls:
   - hosts:
     - date-calendar.back-end.kro.kr
-    secretName: date-calendar-back-end-kro-kr-letsencrypt
+    secretName: date-calendar-backend-tls

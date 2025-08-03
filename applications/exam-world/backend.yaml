@@ -32,7 +32,10 @@ spec:
         - name: SERVER_ADDRESS
           value: "https://exam-world.back-end.kro.kr"
         - name: PRIVATE_KEY
-          value: "9C8EB6D44D9EC3655947418A8B2B9"
+          valueFrom:
+            secretKeyRef:
+              name: exam-world-secrets
+              key: private_key
         - name: NODE_VERSION
           value: "20.19.4"
         - name: YARN_VERSION
@@ -54,7 +57,22 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "250m"
-        
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 4000
+          initialDelaySeconds: 45
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 4000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
         volumeMounts:
         - name: upload-volume
           mountPath: /public/upload

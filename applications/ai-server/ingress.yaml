@@ -1,26 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: workplace-type-test-ingress
-  namespace: workplace-type-test
+  name: ai-server-ingress
+  namespace: ai-server
   annotations:
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/redirect-to-https: "true"
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
-  tls:
-  - hosts:
-    - workplace-type-test.prod.kro.kr
-    secretName: workplace-type-test-tls
   rules:
-  - host: workplace-type-test.prod.kro.kr
+  - host: ai-server.prod.kro.kr
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: workplace-type-test
+            name: ai-server
             port:
-              number: 80
+              number: 8000
+  tls:
+  - hosts:
+    - ai-server.prod.kro.kr
+    secretName: ai-server-tls

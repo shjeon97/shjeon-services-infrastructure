@@ -12,15 +12,12 @@ spec:
     metadata:
       labels:
         app: live-connect-backend
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "4000"
     spec:
       containers:
       - name: backend
-        image: nginx:latest
+        image: shjeon97/live-connect-backend:latest
         ports:
-        - containerPort: 80
+        - containerPort: 4000
         resources:
           limits:
             memory: "512Mi"
@@ -28,6 +25,22 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
         volumeMounts:
         - name: html-content
           mountPath: /usr/share/nginx/html
@@ -46,7 +59,7 @@ spec:
     app: live-connect-backend
   ports:
   - port: 4000
-    targetPort: 80
+    targetPort: 4000
   type: ClusterIP
 ---
 apiVersion: v1

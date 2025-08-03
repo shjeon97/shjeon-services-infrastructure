@@ -12,13 +12,10 @@ spec:
     metadata:
       labels:
         app: date-calendar-frontend
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "80"
     spec:
       containers:
       - name: frontend
-        image: nginx:latest
+        image: shjeon97/date-calendar-frontend:latest
         ports:
         - containerPort: 80
         resources:
@@ -28,6 +25,22 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
         volumeMounts:
         - name: html-content
           mountPath: /usr/share/nginx/html
@@ -55,6 +68,7 @@ metadata:
   name: date-calendar-frontend-html
   namespace: date-calendar
 data:
+  healthz.html: "OK"
   index.html: |
     <!DOCTYPE html>
     <html>

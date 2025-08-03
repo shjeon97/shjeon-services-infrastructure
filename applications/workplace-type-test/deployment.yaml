@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: workplace-type-test
-  namespace: default
+  namespace: workplace-type-test
   labels:
     app: workplace-type-test
 spec:
@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: workplace-type-test
-        image: workplace-type-test:latest
-        imagePullPolicy: IfNotPresent
+        image: shjeon97/workplace-type-test:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:
@@ -45,7 +45,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: workplace-type-test
-  namespace: default
+  namespace: workplace-type-test
 spec:
   selector:
     app: workplace-type-test

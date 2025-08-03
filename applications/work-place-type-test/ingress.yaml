@@ -2,17 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: work-place-type-test-ingress
-  namespace: default
+  namespace: work-place-type-test
   annotations:
     kubernetes.io/ingress.class: traefik
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/redirect-to-https: "true"
     traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   tls:
   - hosts:
     - work-place-type-test.prod.kro.kr
-    secretName: work-place-type-test-letsencrypt
+    secretName: work-place-type-test-tls
   rules:
   - host: work-place-type-test.prod.kro.kr
     http:

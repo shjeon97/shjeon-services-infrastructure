@@ -23,7 +23,7 @@ spec:
   tls:
   - hosts:
     - intranet.prod.kro.kr
-    secretName: intranet-prod-kro-kr-letsencrypt
+    secretName: intranet-frontend-tls
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -50,4 +50,4 @@ spec:
   tls:
   - hosts:
     - intranet.back-end.kro.kr
-    secretName: intranet-back-end-kro-kr-letsencrypt
+    secretName: intranet-backend-tls
