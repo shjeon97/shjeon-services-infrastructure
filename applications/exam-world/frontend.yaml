@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exam-world-frontend
+  namespace: exam-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exam-world-frontend
+  template:
+    metadata:
+      labels:
+        app: exam-world-frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+    spec:
+      containers:
+      - name: frontend
+        image: shjeon97/exam-world-frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: exam-world-frontend-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exam-world-frontend
+  namespace: exam-world
+spec:
+  selector:
+    app: exam-world-frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: ClusterIP
