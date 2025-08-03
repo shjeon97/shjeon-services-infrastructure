@@ -36,7 +36,7 @@ spec:
         - name: GITEA__SERVER__DOMAIN
           value: "gitea.shjeon.kro.kr"
         - name: GITEA__SERVER__ROOT_URL
-          value: "http://gitea.shjeon.kro.kr/"
+          value: "https://gitea.shjeon.kro.kr/"
         - name: GITEA__SERVER__SSH_DOMAIN
           value: "gitea.shjeon.kro.kr"
         - name: GITEA__SERVER__SSH_PORT
@@ -88,6 +88,9 @@ metadata:
   name: gitea-ingress
   namespace: gitea
   annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
@@ -100,4 +103,8 @@ spec:
           service:
             name: gitea-service
             port:
-              number: 80
+              name: http
+  tls:
+  - hosts:
+    - gitea.shjeon.kro.kr
+    secretName: gitea-tls-secret # Traefik이 Let's Encrypt를 통해 생성할 시크릿 이름
