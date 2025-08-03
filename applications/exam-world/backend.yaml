@@ -12,9 +12,6 @@ spec:
     metadata:
       labels:
         app: exam-world-backend
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "4000"
     spec:
       containers:
       - name: backend

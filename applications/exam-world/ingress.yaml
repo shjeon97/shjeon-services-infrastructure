@@ -23,7 +23,7 @@ spec:
   tls:
   - hosts:
     - exam-world.prod.kro.kr
-    secretName: exam-world-frontend-letsencrypt
+    secretName: exam-world-frontend-tls
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -50,4 +50,4 @@ spec:
   tls:
   - hosts:
     - exam-world.back-end.kro.kr
-    secretName: exam-world-backend-letsencrypt
+    secretName: exam-world-backend-tls
