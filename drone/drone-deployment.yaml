@@ -42,7 +42,7 @@ spec:
         - name: DRONE_SERVER_HOST
           value: "drone.shjeon.kro.kr"
         - name: DRONE_SERVER_PROTO
-          value: "https"
+          value: "http"
         volumeMounts:
         - name: drone-data
           mountPath: /data
