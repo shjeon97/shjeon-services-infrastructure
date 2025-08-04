@@ -28,7 +28,7 @@ spec:
           containerPort: 80
         env:
         - name: DRONE_GITEA_SERVER
-          value: "http://gitea.shjeon.kro.kr"
+          value: "https://gitea.shjeon.kro.kr"
         - name: DRONE_GITEA_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -42,7 +42,7 @@ spec:
         - name: DRONE_SERVER_HOST
           value: "drone.shjeon.kro.kr"
         - name: DRONE_SERVER_PROTO
-          value: "http"
+          value: "https"
         volumeMounts:
         - name: drone-data
           mountPath: /data
@@ -84,9 +84,7 @@ metadata:
   name: drone-server-ingress
   namespace: drone
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    traefik.ingress.kubernetes.io/router.entrypoints: web
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
@@ -100,7 +98,3 @@ spec:
             name: drone-server-service
             port:
               name: http
-  tls:
-  - hosts:
-    - drone.shjeon.kro.kr
-    secretName: drone-tls-secret # Traefik이 Let's Encrypt를 통해 생성할 시크릿 이름

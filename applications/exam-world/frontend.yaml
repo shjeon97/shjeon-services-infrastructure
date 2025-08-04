@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,9 +14,11 @@ spec:
       labels:
         app: exam-world-frontend
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
       - name: frontend
-        image: shjeon97/exam-world-frontend:latest
+        image: harbor.shjeon.kro.kr/library/exam-world-frontend:latest
         ports:
         - containerPort: 3000
         resources:
